@@ -1,5 +1,3 @@
-type error;
-
 module Subscription: {
   type t;
   let unsubscribe: t => unit;
@@ -8,6 +6,13 @@ module Subscription: {
   let add: (t, t) => t;
   let remove: (t, t) => unit;
 };
+
+/* module Observer: {
+     type t('a);
+     let next: 'a => unit;
+     let error: error => unit;
+     let complete: unit => unit;
+   }; */
 
 module Observable: {
   type t('a);
@@ -19,16 +24,16 @@ module Observable: {
   /* add scheduler */
 
   let fromArray: array('a) => t('a);
+  let fromPromise: Js.Promise.t('a) => t('a);
 
   /* subscribe */
 
   let subscribe:
     (
-      t('a),
       ~next: 'a => unit=?,
-      ~error: error => unit=?,
+      ~error: 'e => unit=?,
       ~complete: unit => unit=?,
-      unit
+      t('a)
     ) =>
     Subscription.t;
 
@@ -36,21 +41,16 @@ module Observable: {
 
   let tap:
     (
-      t('a),
       ~next: 'a => unit=?,
-      ~error: error => unit=?,
+      ~error: 'e => unit=?,
       ~complete: unit => unit=?,
-      unit
+      t('a)
     ) =>
     t('a);
 
   let map: (t('a), 'a => 'b) => t('b);
-  let mapU: (t('a), (. 'a) => 'b) => t('b);
   let mapWithIndex: (t('a), (int, 'a) => 'b) => t('b);
-  let mapWithIndexU: (t('a), (. int, 'a) => 'b) => t('b);
 
   let filter: (t('a), 'a => bool) => t('a);
-  let filterU: (t('a), (. 'a) => bool) => t('a);
   let filterWithIndex: (t('a), (int, 'a) => bool) => t('a);
-  let filterWithIndexU: (t('a), (. int, 'a) => bool) => t('a);
 };

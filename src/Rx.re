@@ -1,4 +1,4 @@
-type error;
+let noop = _ => ();
 
 module Subscription = {
   type t;
@@ -17,6 +17,8 @@ module Observable = {
   /* create */
 
   [@bs.module "rxjs"] external fromArray : array('a) => t('a) = "from";
+  [@bs.module "rxjs"]
+  external fromPromise : Js.Promise.t('a) => t('a) = "from";
 
   [@bs.module "rxjs"] external of1 : 'a => t('a) = "of";
   [@bs.module "rxjs"] external of2 : ('a, 'a) => t('a) = "of";
@@ -28,14 +30,13 @@ module Observable = {
     (
       t('a),
       [@bs.uncurry] ('a => unit),
-      [@bs.uncurry] (error => unit),
+      [@bs.uncurry] ('e => unit),
       [@bs.uncurry] (unit => unit)
     ) =>
     Subscription.t =
     "subscribe";
 
-  let subscribe =
-      (source, ~next=_ => (), ~error=_ => (), ~complete=() => (), ()) =>
+  let subscribe = (~next=noop, ~error=noop, ~complete=noop, source) =>
     _subscribe(source, next, error, complete);
 
   /* operators */
@@ -44,45 +45,40 @@ module Observable = {
   external _tap :
     (
       [@bs.uncurry] ('a => unit),
-      [@bs.uncurry] (error => unit),
+      [@bs.uncurry] ('e => unit),
       [@bs.uncurry] (unit => unit)
     ) =>
     operatorFunction('a, 'a) =
     "tap";
 
-  let tap = (source, ~next=_ => (), ~error=_ => (), ~complete=() => (), ()) =>
+  let tap = (~next=noop, ~error=noop, ~complete=noop, source) =>
     (_tap(next, error, complete))(. source);
 
   [@bs.module "rxjs/operators"]
-  external _mapWithIndex : ((. 'a, int) => 'b) => operatorFunction('a, 'b) =
+  external _map : ([@bs.uncurry] ('a => 'b)) => operatorFunction('a, 'b) =
     "map";
 
-  let mapWithIndexU = (source, project) =>
-    (_mapWithIndex((. e, i) => project(. i, e)))(. source);
+  let map = (source, project) => (_map(project))(. source);
+
+  [@bs.module "rxjs/operators"]
+  external _mapWithIndex :
+    ([@bs.uncurry] (('a, int) => 'b)) => operatorFunction('a, 'b) =
+    "map";
+
   let mapWithIndex = (source, project) =>
-    source |. mapWithIndexU((. i, e) => project(i, e));
+    (_mapWithIndex((e, i) => project(i, e)))(. source);
 
   [@bs.module "rxjs/operators"]
-  external _map : ((. 'a) => 'b) => operatorFunction('a, 'b) = "map";
+  external _filter : ([@bs.uncurry] ('a => bool)) => operatorFunction('a, 'a) =
+    "filter";
 
-  let mapU = (source, project) => (_map((. e) => project(. e)))(. source);
-  let map = (source, project) => source |. mapU((. e) => project(e));
-
-  [@bs.module "rxjs/operators"]
-  external _filter : ((. 'a) => bool) => operatorFunction('a, 'a) = "filter";
-
-  let filterU = (source, predicate) =>
-    (_filter((. e) => predicate(. e)))(. source);
-  let filter = (source, predicate) =>
-    source |. filterU((. e) => predicate(e));
+  let filter = (source, predicate) => (_filter(predicate))(. source);
 
   [@bs.module "rxjs/operators"]
   external _filterWithIndex :
-    ((. 'a, int) => bool) => operatorFunction('a, 'a) =
+    ([@bs.uncurry] (('a, int) => bool)) => operatorFunction('a, 'a) =
     "filter";
 
-  let filterWithIndexU = (source, predicate) =>
-    (_filterWithIndex((. e, i) => predicate(. i, e)))(. source);
   let filterWithIndex = (source, predicate) =>
-    source |. filterWithIndexU((. i, e) => predicate(i, e));
+    (_filterWithIndex((e, i) => predicate(i, e)))(. source);
 };

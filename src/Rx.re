@@ -116,3 +116,11 @@ module Observable = {
   let mergeMapWithIndex = (~concurrent=?, source, project) =>
     (_mergeMapWithIndex(flip(project), ~concurrent?))(. source);
 };
+
+module Subject = {
+  type t('a);
+
+  [@bs.module "rxjs"] [@bs.new] external make : unit => t('a) = "Subject";
+  external asObservable : t('a) => Observable.t('a) = "%identity";
+  external asObserver : t('a) => Observer.t('a) = "%identity";
+};

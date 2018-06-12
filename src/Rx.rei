@@ -63,3 +63,10 @@ module Observable: {
   let mergeMapWithIndex:
     (~concurrent: int=?, t('a), (int, 'a) => t('b)) => t('b);
 };
+
+module Subject: {
+  type t('a);
+  let make: unit => t('a);
+  let asObservable: t('a) => Observable.t('a);
+  let asObserver: t('a) => Observer.t('a);
+};

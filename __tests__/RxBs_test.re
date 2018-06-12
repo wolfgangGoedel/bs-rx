@@ -4,6 +4,29 @@ open Expect;
 exception TestExn(string);
 
 describe("observable", () => {
+  test("make one", () => {
+    let obs =
+      Rx.Observable.make(observer => {
+        Rx.Observer.next(observer, "Hello");
+        Rx.Observer.complete(observer);
+        () => ();
+      });
+
+    let observed = ref(None);
+    let completed = ref(false);
+
+    Rx.Observable.(
+      obs
+      |. subscribe(
+           ~next=e => observed := Some(e),
+           ~complete=() => completed := true,
+         )
+    )
+    |> ignore;
+
+    expect((observed^, completed^)) |> toEqual((Some("Hello"), true));
+  });
+
   test("create and subscribe with next", () => {
     let observed = [||];
 

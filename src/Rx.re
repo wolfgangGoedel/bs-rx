@@ -11,11 +11,22 @@ module Subscription = {
   [@bs.send] external remove : (t, t) => unit = "";
 };
 
+module Observer = {
+  type t('a);
+
+  [@bs.send] external next : (t('a), 'a) => unit = "";
+  [@bs.send] external error : (t('a), 'e) => unit = "";
+  [@bs.send] external complete : t('a) => unit = "";
+};
+
 module Observable = {
   type t('a);
   type operatorFunction('a, 'b) = (. t('a)) => t('b);
 
   /* create */
+
+  [@bs.module "rxjs"] [@bs.new]
+  external make : ((Observer.t('a), unit) => unit) => t('a) = "Observable";
 
   [@bs.module "rxjs"] external of1 : 'a => t('a) = "of";
   [@bs.module "rxjs"] external of2 : ('a, 'a) => t('a) = "of";

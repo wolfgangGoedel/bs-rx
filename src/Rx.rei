@@ -7,17 +7,19 @@ module Subscription: {
   let remove: (t, t) => unit;
 };
 
-/* module Observer: {
-     type t('a);
-     let next: 'a => unit;
-     let error: error => unit;
-     let complete: unit => unit;
-   }; */
+module Observer: {
+  type t('a);
+  let next: (t('a), 'a) => unit;
+  let error: (t('a), 'e) => unit;
+  let complete: t('a) => unit;
+};
 
 module Observable: {
   type t('a);
 
   /* create */
+
+  let make: ((Observer.t('a), unit) => unit) => t('a);
 
   let of1: 'a => t('a);
   let of2: ('a, 'a) => t('a);

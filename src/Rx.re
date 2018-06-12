@@ -1,4 +1,5 @@
 let noop = _ => ();
+let flip = (f, a, b) => f(b, a);
 
 module Subscription = {
   type t;
@@ -16,12 +17,16 @@ module Observable = {
 
   /* create */
 
+  [@bs.module "rxjs"] external of1 : 'a => t('a) = "of";
+  [@bs.module "rxjs"] external of2 : ('a, 'a) => t('a) = "of";
+
   [@bs.module "rxjs"] external fromArray : array('a) => t('a) = "from";
   [@bs.module "rxjs"]
   external fromPromise : Js.Promise.t('a) => t('a) = "from";
 
-  [@bs.module "rxjs"] external of1 : 'a => t('a) = "of";
-  [@bs.module "rxjs"] external of2 : ('a, 'a) => t('a) = "of";
+  [@bs.module "rxjs"] external defer : (unit => t('a)) => t('a) = "defer";
+  [@bs.module "rxjs"]
+  external deferPromise : (unit => Js.Promise.t('a)) => t('a) = "defer";
 
   /* consume */
 
@@ -66,7 +71,7 @@ module Observable = {
     "map";
 
   let mapWithIndex = (source, project) =>
-    (_mapWithIndex((e, i) => project(i, e)))(. source);
+    (_mapWithIndex(flip(project)))(. source);
 
   [@bs.module "rxjs/operators"]
   external _filter : ([@bs.uncurry] ('a => bool)) => operatorFunction('a, 'a) =
@@ -80,5 +85,23 @@ module Observable = {
     "filter";
 
   let filterWithIndex = (source, predicate) =>
-    (_filterWithIndex((e, i) => predicate(i, e)))(. source);
+    (_filterWithIndex(flip(predicate)))(. source);
+
+  [@bs.module "rxjs/operators"]
+  external _mergeMap :
+    ([@bs.uncurry] ('a => t('b)), ~concurrent: int=?) =>
+    operatorFunction('a, 'b) =
+    "flatMap";
+
+  let mergeMap = (~concurrent=?, source, project) =>
+    (_mergeMap(project, ~concurrent?))(. source);
+
+  [@bs.module "rxjs/operators"]
+  external _mergeMapWithIndex :
+    ([@bs.uncurry] (('a, int) => t('b)), ~concurrent: int=?) =>
+    operatorFunction('a, 'b) =
+    "flatMap";
+
+  let mergeMapWithIndex = (~concurrent=?, source, project) =>
+    (_mergeMapWithIndex(flip(project), ~concurrent?))(. source);
 };

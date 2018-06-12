@@ -47,6 +47,21 @@ describe("observable", () => {
     |> ignore;
   });
 
+  testAsync("from defered Promise", done_ => {
+    let observed = ref(None);
+
+    Rx.Observable.(
+      deferPromise(() => Js.Promise.resolve("Hello later"))
+      |. subscribe(
+           ~next=e => observed := Some(e),
+           ~complete=
+             () =>
+               expect(observed^) |> toEqual(Some("Hello later")) |> done_,
+         )
+    )
+    |> ignore;
+  });
+
   testAsync("from rejected Promise", done_ =>
     Rx.Observable.(
       fromPromise(Js.Promise.reject(TestExn("boo")))
@@ -56,4 +71,17 @@ describe("observable", () => {
     )
     |> ignore
   );
+
+  test("mergeMap", () => {
+    let observed = [||];
+
+    Rx.Observable.(
+      of2(1, 2)
+      |. mergeMap(e => of2(string_of_int(e), string_of_int(e * 2)))
+      |. subscribe(~next=e => Js.Array.push(e, observed) |> ignore)
+    )
+    |. ignore;
+
+    expect(observed) |> toEqual([|"1", "2", "2", "4"|]);
+  });
 });

@@ -26,6 +26,9 @@ module Observable: {
   let fromArray: array('a) => t('a);
   let fromPromise: Js.Promise.t('a) => t('a);
 
+  let defer: (unit => t('a)) => t('a);
+  let deferPromise: (unit => Js.Promise.t('a)) => t('a);
+
   /* subscribe */
 
   let subscribe:
@@ -53,4 +56,8 @@ module Observable: {
 
   let filter: (t('a), 'a => bool) => t('a);
   let filterWithIndex: (t('a), (int, 'a) => bool) => t('a);
+
+  let mergeMap: (~concurrent: int=?, t('a), 'a => t('b)) => t('b);
+  let mergeMapWithIndex:
+    (~concurrent: int=?, t('a), (int, 'a) => t('b)) => t('b);
 };

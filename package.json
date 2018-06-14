@@ -1,15 +1,17 @@
 {
   "name": "bs-rx",
   "version": "0.1.0",
-  "files": ["src/RxBs.re", "bsconfig.json"],
   "scripts": {
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
     "clean": "bsb -clean-world",
     "test": "jest"
   },
-  "keywords": ["BuckleScript"],
-  "author": "Wolfgang Goedel",
+  "keywords": [
+    "BuckleScript",
+    "RxJS"
+  ],
+  "author": "Wolfgang Goedel <wgoedel@gmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
